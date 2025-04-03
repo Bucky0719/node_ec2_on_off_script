@@ -12,7 +12,7 @@ stages:
   - job: StartJob
     displayName: "Start EC2"
     pool:
-      name: "agent3"
+      name: "Default"
     steps:
     - script: |
         chmod +x start_ec2.sh
@@ -28,7 +28,7 @@ stages:
   - job: BuildJob
     displayName: "Build & Push Docker Image"
     pool:
-      name: "agent3"
+      name: "Default"
     steps:
     - checkout: self
     - script: |
@@ -46,7 +46,7 @@ stages:
   - job: DeployJob
     displayName: "Deploy App on EC2"
     pool:
-      name: "agent3"
+      name: "Default"
     steps:
     - checkout: self
     - script: |
@@ -70,7 +70,7 @@ stages:
   - job: StopJob
     displayName: "Stop EC2"
     pool:
-      name: "agent3"
+      name: "Default"
     steps:
     - script: |
         chmod +x stop_ec2.sh
@@ -86,7 +86,7 @@ stages:
   - job: NotifySuccess
     displayName: "Send Success Notification"
     pool:
-      name: "agent3"
+      name: "Default"
     steps:
     - script: echo "Pipeline executed successfully! 🎉"
       displayName: "Notify Success"
@@ -100,7 +100,7 @@ stages:
   - job: NotifyFailure
     displayName: "Send Failure Notification"
     pool:
-      name: "agent3"
+      name: "Default"
     steps:
     - script: echo "Pipeline failed! 🚨"
       displayName: "Notify Failure"
