@@ -15,8 +15,8 @@ stages:
       name: "Default"
     steps:
     - script: |
-        chmod +x start_ec2.sh
-        ./start_ec2.sh
+        chmod +x start_script.sh
+        ./start_script.sh
       displayName: "Executing Start EC2 Script"
 
 # 🏗 BUILD & PUSH DOCKER IMAGE
@@ -73,8 +73,8 @@ stages:
       name: "Default"
     steps:
     - script: |
-        chmod +x stop_ec2.sh
-        ./stop_ec2.sh
+        chmod +x stop_script.sh
+        ./stop_script.sh
       displayName: "Executing Stop EC2 Script"
 
 # ✅ SUCCESS NOTIFICATION
