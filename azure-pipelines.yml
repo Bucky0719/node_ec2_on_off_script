@@ -1,0 +1,81 @@
+trigger:
+  - main  # Runs pipeline when code is pushed to 'main' branch
+
+stages:
+# 🚀 START EC2 INSTANCE
+- stage: StartEC2
+  displayName: "Start EC2 Instance"
+  jobs:
+  - job: StartJob
+    displayName: "Start EC2"
+    pool:
+      name: "agent3"
+    steps:
+    - script: |
+        chmod +x start_ec2.sh
+        ./start_ec2.sh
+      displayName: "Executing Start EC2 Script"
+
+# 🏗 BUILD & DEPLOY APPLICATION
+- stage: DeployApp
+  displayName: "Deploy Node.js App"
+  dependsOn: StartEC2
+  condition: succeeded()
+  jobs:
+  - job: DeployJob
+    displayName: "Deploy App on EC2"
+    pool:
+      name: "agent3"
+    steps:
+    - checkout: self
+    - script: |
+        ssh -o StrictHostKeyChecking=no -i my-key.pem ubuntu@<EC2_PUBLIC_IP> << 'EOF'
+        sudo apt update && sudo apt install -y docker.io
+        sudo docker pull bucky0838/node_project:latest
+        sudo docker run -d -p 8080:8080 --name my_app bucky0838/node_project:latest
+        EOF
+      displayName: "Deploy App on EC2"
+
+# 🛑 STOP EC2 INSTANCE
+- stage: StopEC2
+  displayName: "Stop EC2 Instance"
+  dependsOn: DeployApp
+  condition: succeeded()
+  jobs:
+  - job: StopJob
+    displayName: "Stop EC2"
+    pool:
+      name: "agent3"
+    steps:
+    - script: |
+        chmod +x stop_ec2.sh
+        ./stop_ec2.sh
+      displayName: "Executing Stop EC2 Script"
+
+# ✅ SUCCESS NOTIFICATION
+- stage: SuccessNotification
+  displayName: "Notify on Success"
+  dependsOn: [StartEC2, DeployApp, StopEC2]
+  condition: succeeded()
+  jobs:
+  - job: NotifySuccess
+    displayName: "Send Success Notification"
+    pool:
+      name: "agent3"
+    steps:
+    - script: echo "Pipeline executed successfully! 🎉"
+      displayName: "Notify Success"
+
+# ❌ FAILURE NOTIFICATION
+- stage: FailureNotification
+  displayName: "Notify on Failure"
+  dependsOn: [StartEC2, DeployApp, StopEC2]
+  condition: failed()
+  jobs:
+  - job: NotifyFailure
+    displayName: "Send Failure Notification"
+    pool:
+      name: "agent3"
+    steps:
+    - script: echo "Pipeline failed! 🚨"
+      displayName: "Notify Failure"
