@@ -1,6 +1,13 @@
 trigger:
   - main  # Runs pipeline when code is pushed to 'main' branch. 
 
+variables:
+  DOCKER_IMAGE: "bucky0838/node_project:latest"
+  DOCKERHUB_USERNAME: "$(DOCKERHUB_USERNAME)"
+  DOCKERHUB_PASSWORD: "$(DOCKERHUB_PASSWORD)"  
+  dockerfilePath: 'Dockerfile'
+
+appendCommitMessageToRunName:
 stages:
 # 🚀 START EC2 INSTANCE
 - stage: StartEC2
