@@ -13,6 +13,8 @@ stages:
     displayName: "Start EC2"
     pool:
       name: "Default"
+      demands:
+        - Agent.Name -equals agent3
     steps:
     - script: |
         chmod +x start_script.sh
@@ -29,6 +31,8 @@ stages:
     displayName: "Build & Push Docker Image"
     pool:
       name: "Default"
+      demands:
+        - Agent.Name -equals agent3
     steps:
     - checkout: self
     - script: |
@@ -47,6 +51,8 @@ stages:
     displayName: "Deploy App on EC2"
     pool:
       name: "Default"
+      demands:
+        - Agent.Name -equals agent3
     steps:
     - checkout: self
     - script: |
@@ -71,6 +77,8 @@ stages:
     displayName: "Stop EC2"
     pool:
       name: "Default"
+      demands:
+        - Agent.Name -equals agent3
     steps:
     - script: |
         chmod +x stop_script.sh
@@ -87,6 +95,8 @@ stages:
     displayName: "Send Success Notification"
     pool:
       name: "Default"
+      demands:
+        - Agent.Name -equals agent3
     steps:
     - script: echo "Pipeline executed successfully! 🎉"
       displayName: "Notify Success"
@@ -101,6 +111,8 @@ stages:
     displayName: "Send Failure Notification"
     pool:
       name: "Default"
+      demands:
+        - Agent.Name -equals agent3
     steps:
     - script: echo "Pipeline failed! 🚨"
       displayName: "Notify Failure"
