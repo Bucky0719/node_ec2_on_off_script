@@ -17,14 +17,15 @@ stages:
         - Agent.Name -equals agent3
     steps:
     - script: |
-        chmod +x start_script.sh
-        ./start_script.sh
-        export EC2_PUBLIC_IP=$(aws ec2 describe-instances \
-          --filters "Name=instance-state-name,Values=running" \
-          --query "Reservations[*].Instances[*].PublicIpAddress" \
-          --output text)
-        echo "EC2_PUBLIC_IP=$EC2_PUBLIC_IP" >> $GITHUB_ENV
+       chmod +x start_script.sh
+       ./start_script.sh
+       export EC2_PUBLIC_IP=$(aws ec2 describe-instances \
+         --filters "Name=instance-state-name,Values=running" \
+         --query "Reservations[*].Instances[*].PublicIpAddress" \
+         --output text)
+       echo "##vso[task.setvariable variable=EC2_PUBLIC_IP;]$EC2_PUBLIC_IP"
       displayName: "Start EC2 and Fetch Public IP"
+
 
 # 🏗 BUILD & PUSH DOCKER IMAGE
 - stage: BuildAndPush
