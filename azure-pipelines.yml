@@ -19,7 +19,12 @@ stages:
     - script: |
         chmod +x start_script.sh
         ./start_script.sh
-      displayName: "Executing Start EC2 Script"
+        export EC2_PUBLIC_IP=$(aws ec2 describe-instances \
+          --filters "Name=instance-state-name,Values=running" \
+          --query "Reservations[*].Instances[*].PublicIpAddress" \
+          --output text)
+        echo "EC2_PUBLIC_IP=$EC2_PUBLIC_IP" >> $GITHUB_ENV
+      displayName: "Start EC2 and Fetch Public IP"
 
 # 🏗 BUILD & PUSH DOCKER IMAGE
 - stage: BuildAndPush
@@ -58,7 +63,7 @@ stages:
     - script: |
         echo "$(SSH_PRIVATE_KEY)" > private_key.pem
         chmod 600 private_key.pem
-        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$(EC2_PUBLIC_IP) << 'EOF'
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$EC2_PUBLIC_IP << 'EOF'
         sudo apt update && sudo apt install -y docker.io
         sudo docker stop my_app || true
         sudo docker rm my_app || true
