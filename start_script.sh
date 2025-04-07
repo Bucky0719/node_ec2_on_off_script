@@ -11,5 +11,5 @@ aws ec2 wait instance-running --instance-ids $INSTANCE_ID --region $AWS_REGION
 
 EC2_PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --region $AWS_REGION --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
 
-echo "EC2 Public IP: $EC2_PUBLIC_IP"
+echo "EC2_Public_IP: $EC2_PUBLIC_IP"
 echo "##vso[task.setvariable variable=EC2_PUBLIC_IP;isOutput=true]$EC2_PUBLIC_IP"
