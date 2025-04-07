@@ -15,14 +15,17 @@ stages:
       name: "Default"
       demands:
         - Agent.Name -equals agent3
+
     steps:
     - script: |
         chmod +x start_script.sh
         ./start_script.sh
-      name: setip  
+      name: setip
       displayName: "Start EC2 and Fetch Public IP"
-  outputs:
-    EC2_PUBLIC_IP: setip.EC2_PUBLIC_IP
+
+    outputs:        # 🔥 Correct position: inside the job, sibling to 'steps'
+      EC2_PUBLIC_IP: setip.EC2_PUBLIC_IP
+
 
 
 
