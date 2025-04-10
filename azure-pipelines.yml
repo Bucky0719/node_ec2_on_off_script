@@ -52,7 +52,7 @@ stages:
             docker push $(DOCKER_IMAGE)
           displayName: "Build & Push Docker Image"
 
-# 🚀 DEPLOY APPLICATION ON EC2
+# DEPLOY APPLICATION ON EC2
 - stage: DeployApp
   displayName: "Deploy Node.js App"
   dependsOn: BuildAndPush
