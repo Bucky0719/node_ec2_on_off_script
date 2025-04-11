@@ -9,7 +9,7 @@ variables:
   # - AWS_DEFAULT_REGION: us-east-1
 
 stages:
-# 🚀 START EC2 INSTANCE
+# START EC2 INSTANCE
 - stage: StartEC2
   displayName: "Start EC2 Instance"
   jobs:
