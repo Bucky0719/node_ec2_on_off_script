@@ -71,7 +71,7 @@ stages:
         - script: |
             echo "$(SSH_PRIVATE_KEY)" > private_key.pem
             chmod 600 private_key.pem
-            ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$(EC2_PUBLIC_IP) << 'EOF'
+            ssh -i $(SSH_PRIVATE_KEY) ubuntu@$(EC2_PUBLIC_IP) << 'EOF'
             sudo apt update && sudo apt install -y docker.io
             sudo docker stop my_app || true
             sudo docker rm my_app || true
