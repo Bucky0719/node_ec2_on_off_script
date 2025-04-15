@@ -3,7 +3,7 @@ trigger:
 
 variables:
   - group: DockerHubVariables  # Load variables from Azure DevOps UI
-  # Add these AWS variables to your variable group:
+  # Add these AWS variables to your variable group: 
   # - AWS_ACCESS_KEY_ID
   # - AWS_SECRET_ACCESS_KEY
   # - AWS_DEFAULT_REGION: us-east-1
