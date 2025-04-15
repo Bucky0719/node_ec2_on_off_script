@@ -9,28 +9,19 @@ variables:
   # - AWS_DEFAULT_REGION: us-east-1
 
 stages:
-# START EC2 INSTANCE
+# 🚀 START EC2 INSTANCE
 - stage: StartEC2
   displayName: "Start EC2 Instance"
   jobs:
-    - job: StartJob
-      displayName: "Start EC2"
-      pool:
-        name: "Default"
-        demands:
-          - Agent.Name -equals agent3
-      steps:
-        - checkout: self
-        - task: Bash@3
-          name: setip
-          displayName: "Start EC2 and Fetch Public IP"
-          inputs:
-            filePath: 'start_script.sh'
-            workingDirectory: $(System.DefaultWorkingDirectory)
-          env:
-            AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-            AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-            AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+  - job: StartJob
+    displayName: "Start EC2"
+    pool:
+      name: "Default"
+    steps:
+    - script: |
+        chmod +x start_script.sh
+        ./start_script.sh
+      displayName: "Executing Start EC2 Script"
 
 # 🏗 BUILD & PUSH DOCKER IMAGE
 - stage: BuildAndPush
@@ -71,7 +62,7 @@ stages:
         - script: |
             echo "$(SSH_PRIVATE_KEY)" > private_key.pem
             chmod 600 private_key.pem
-            ssh -i $(SSH_PRIVATE_KEY) ubuntu@$(EC2_PUBLIC_IP) << 'EOF'
+            ssh -i private_key.pem ubuntu@$(EC2_PUBLIC_IP) << 'EOF'
             sudo apt update && sudo apt install -y docker.io
             sudo docker stop my_app || true
             sudo docker rm my_app || true
