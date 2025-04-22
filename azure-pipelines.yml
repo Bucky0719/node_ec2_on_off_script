@@ -2,7 +2,7 @@ trigger:
   - main
 
 variables:
-  - group: DockerHubVariables
+  - group: script_variables
 
 stages:
 
