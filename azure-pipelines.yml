@@ -51,15 +51,20 @@ stages:
     steps:
     - checkout: self
     - script: |
-        echo "EC2 IP: $(EC2_PUBLIC_IP)"
-        echo "$(SSH_PRIVATE_KEY)" > private_key.pem
+        echo "Deploying NGINX to EC2 at: $EC2_PUBLIC_IP"
+
+        # Write SSH key
+        echo "$SSH_PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
-        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$(EC2_PUBLIC_IP) << 'EOF'
+
+        # Connect to EC2 and deploy the app
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$EC2_PUBLIC_IP << EOF
+          echo "Connected to EC2. Installing Docker and running container..."
           sudo apt update && sudo apt install -y docker.io
           sudo docker stop my_app || true
           sudo docker rm my_app || true
-          sudo docker pull $(DOCKER_IMAGE)
-          sudo docker run -d -p 8080:8080 --name my_app $(DOCKER_IMAGE)
+          sudo docker pull $DOCKER_IMAGE
+          sudo docker run -d -p 8080:8080 --name my_app $DOCKER_IMAGE
         EOF
       displayName: "Deploy NGINX App to EC2"
 
