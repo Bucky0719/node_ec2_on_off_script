@@ -17,6 +17,9 @@ stages:
         ./start_script.sh
       name: setip 
       displayName: "Start EC2 Instance"
+    
+    outputs:
+      EC2_PUBLIC_IP: setip.EC2_PUBLIC_IP
 
 # 🏗 BUILD & PUSH DOCKER IMAGE
 - stage: BuildAndPush
