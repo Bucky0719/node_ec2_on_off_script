@@ -17,7 +17,7 @@ stages:
         ./start_script.sh
       displayName: "Start EC2 Instance"
 
-# 🏗 BUILD & PUSH DOCKER IMAGE
+# 🏗  BUILD & PUSH DOCKER IMAGE
 - stage: BuildAndPush
   dependsOn: StartEC2
   condition: succeeded()
