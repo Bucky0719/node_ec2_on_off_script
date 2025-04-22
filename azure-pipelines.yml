@@ -1,128 +1,105 @@
 trigger:
-  - main  # Runs pipeline when code is pushed to 'main' branch
+  - main
 
 variables:
-  - group: DockerHubVariables  # Load variables from Azure DevOps UI
-  # Add these AWS variables to your variable group:
-  # - AWS_ACCESS_KEY_ID
-  # - AWS_SECRET_ACCESS_KEY
-  # - AWS_DEFAULT_REGION: us-east-1
+  - group: DockerHubVariables
 
 stages:
+
 # 🚀 START EC2 INSTANCE
 - stage: StartEC2
-  displayName: "Start EC2 Instance"
   jobs:
   - job: StartJob
-    displayName: "Start EC2"
-    pool:
-      name: "Default"
+    pool: Default
     steps:
     - script: |
         chmod +x start_script.sh
         ./start_script.sh
-      displayName: "Executing Start EC2 Script"
+      displayName: "Start EC2 Instance"
 
 # 🏗 BUILD & PUSH DOCKER IMAGE
 - stage: BuildAndPush
-  displayName: "Build & Push Docker Image"
   dependsOn: StartEC2
   condition: succeeded()
   jobs:
-    - job: BuildJob
-      displayName: "Build & Push Docker Image"
-      pool:
-        name: "Default"
-        demands:
-          - Agent.Name -equals agent3
-      steps:
-        - checkout: self
-        - script: |
-            docker build -t $(DOCKER_IMAGE) .
-            echo "$(DOCKERHUB_PASSWORD)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
-            docker push $(DOCKER_IMAGE)
-          displayName: "Build & Push Docker Image"
+  - job: BuildJob
+    pool:
+      name: Default
+      demands:
+        - Agent.Name -equals agent3
+    steps:
+    - checkout: self
+    - script: |
+        docker build -t $(DOCKER_IMAGE) .
+        echo "$(DOCKERHUB_PASSWORD)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
+        docker push $(DOCKER_IMAGE)
+      displayName: "Build and Push Docker Image"
 
-# DEPLOY APPLICATION ON EC2
+# 🚢 DEPLOY TO EC2
 - stage: DeployApp
-  displayName: "Deploy Node.js App"
   dependsOn: BuildAndPush
   condition: succeeded()
   variables:
     EC2_PUBLIC_IP: $[ dependencies.StartEC2.outputs['StartJob.setip.EC2_PUBLIC_IP'] ]
   jobs:
-    - job: DeployJob
-      displayName: "Deploy App on EC2"
-      pool:
-        name: "Default"
-        demands:
-          - Agent.Name -equals agent3
-      steps:
-        - checkout: self
-        - script: |
-            echo "$(SSH_PRIVATE_KEY)" > private_key.pem
-            chmod 600 private_key.pem
-            ssh -i private_key.pem ubuntu@$(EC2_PUBLIC_IP) << 'EOF'
-            sudo apt update && sudo apt install -y docker.io
-            sudo docker stop my_app || true
-            sudo docker rm my_app || true
-            sudo docker pull $(DOCKER_IMAGE)
-            sudo docker run -d -p 8080:8080 --name my_app $(DOCKER_IMAGE)
-            EOF
-          displayName: "Deploy App on EC2"
+  - job: DeployJob
+    pool:
+      name: Default
+      demands:
+        - Agent.Name -equals agent3
+    steps:
+    - checkout: self
+    - script: |
+        echo "$(SSH_PRIVATE_KEY)" > private_key.pem
+        chmod 600 private_key.pem
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ubuntu@$(EC2_PUBLIC_IP) << 'EOF'
+          sudo apt update && sudo apt install -y docker.io
+          sudo docker stop my_app || true
+          sudo docker rm my_app || true
+          sudo docker pull $(DOCKER_IMAGE)
+          sudo docker run -d -p 8080:8080 --name my_app $(DOCKER_IMAGE)
+        EOF
+      displayName: "Deploy NGINX App to EC2"
 
 # 🛑 STOP EC2 INSTANCE
 - stage: StopEC2
-  displayName: "Stop EC2 Instance"
   dependsOn: DeployApp
   condition: succeeded()
   jobs:
-    - job: StopJob
-      displayName: "Stop EC2"
-      pool:
-        name: "Default"
-        demands:
-          - Agent.Name -equals agent3
-      steps:
-        - checkout: self
-        - task: Bash@3
-          displayName: "Executing Stop EC2 Script"
-          inputs:
-            filePath: 'stop_script.sh'
-            workingDirectory: $(System.DefaultWorkingDirectory)
-          env:
-            AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
-            AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-            AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+  - job: StopJob
+    pool:
+      name: Default
+      demands:
+        - Agent.Name -equals agent3
+    steps:
+    - script: |
+        chmod +x stop_script.sh
+        ./stop_script.sh
+      displayName: "Stop EC2 Instance"
 
 # ✅ SUCCESS NOTIFICATION
 - stage: SuccessNotification
-  displayName: "Notify on Success"
   dependsOn: [StartEC2, BuildAndPush, DeployApp, StopEC2]
   condition: succeeded()
   jobs:
-    - job: NotifySuccess
-      displayName: "Send Success Notification"
-      pool:
-        name: "Default"
-        demands:
-          - Agent.Name -equals agent3
-      steps:
-        - script: echo "Pipeline executed successfully! 🎉"
-          displayName: "Notify Success"
+  - job: NotifySuccess
+    pool:
+      name: Default
+      demands:
+        - Agent.Name -equals agent3
+    steps:
+    - script: echo "Pipeline executed successfully! 🎉"
 
 # ❌ FAILURE NOTIFICATION
 - stage: FailureNotification
-  displayName: "Notify on Failure"
   dependsOn: [StartEC2, BuildAndPush, DeployApp, StopEC2]
   condition: failed()
   jobs:
-    - job: NotifyFailure
-      displayName: "Send Failure Notification"
-      pool:
-        name: "Default"
-        demands:
-          - Agent.Name -equals agent3
-      steps:
-        - script: echo "Pipeline failed! 🚨"
-          displayName: "Notify Failure"
+  - job: NotifyFailure
+    pool:
+      name: Default
+      demands:
+        - Agent.Name -equals agent3
+    steps:
+    - script: echo "Pipeline failed! 🚨"
+
