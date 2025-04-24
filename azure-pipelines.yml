@@ -25,7 +25,7 @@ stages:
 
 # 🚢 DEPLOY TO EC2
 - stage: DeployApp
-  dependsOn: BuildAndPush
+  dependsOn: StartEC2
   condition: succeeded()
   variables:
     EC2_PUBLIC_IP: $[ stageDependencies.StartEC2.StartJob.outputs['setip.EC2_PUBLIC_IP'] ]
@@ -74,7 +74,7 @@ stages:
 
 # ✅ SUCCESS NOTIFICATION
 - stage: SuccessNotification
-  dependsOn: [StartEC2, BuildAndPush, DeployApp, StopEC2]
+  dependsOn: [StartEC2, DeployApp, StopEC2]
   condition: succeeded()
   jobs:
   - job: NotifySuccess
@@ -87,7 +87,7 @@ stages:
 
 # ❌ FAILURE NOTIFICATION
 - stage: FailureNotification
-  dependsOn: [StartEC2, BuildAndPush, DeployApp, StopEC2]
+  dependsOn: [StartEC2, DeployApp, StopEC2]
   condition: failed()
   jobs:
   - job: NotifyFailure
