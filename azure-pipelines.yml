@@ -11,34 +11,17 @@ stages:
   jobs:
   - job: StartJob
     pool: Default
+
     steps:
     - script: |
         chmod +x start_script.sh
         ./start_script.sh
-      name: setip 
+      name: setip
       displayName: "Start EC2 Instance"
-    
-    
-    variables:
-      EC2_PUBLIC_IP: setip.EC2_PUBLIC_IP
+      continueOnError: false
 
-# 🏗 BUILD & PUSH DOCKER IMAGE
-- stage: BuildAndPush
-  dependsOn: StartEC2
-  condition: succeeded()
-  jobs:
-  - job: BuildJob
-    pool:
-      name: Default
-      demands:
-        - Agent.Name -equals agent01
-    steps:
-    - checkout: self
-    - script: |
-        docker build -t $(DOCKER_IMAGE) .
-        echo "$(DOCKERHUB_PASSWORD)" | docker login -u "$(DOCKERHUB_USERNAME)" --password-stdin
-        docker push $(DOCKER_IMAGE)
-      displayName: "Build and Push Docker Image"
+    - script: echo "##vso[task.setvariable variable=EC2_PUBLIC_IP;isOutput=true]$(setip.EC2_PUBLIC_IP)"
+      displayName: "Set EC2 Public IP"
 
 # 🚢 DEPLOY TO EC2
 - stage: DeployApp
