@@ -47,6 +47,7 @@ stages:
 
         # Connect to EC2 and deploy the app
         ssh -o StrictHostKeyChecking=no -i awsac4.pem ubuntu@$EC2_PUBLIC_IP << EOF
+          ssh -i awsac4.pem ubuntu@54.91.90.221
           echo "Connected to EC2. Installing Docker and running container..."
           sudo apt update && sudo apt install -y docker.io
           sudo docker stop my_app || true
