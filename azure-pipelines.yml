@@ -42,7 +42,7 @@ stages:
         echo "Deploying NGINX to EC2 at: $EC2_PUBLIC_IP"
 
         # Write SSH key
-        echo "$SSH_PRIVATE_KEY" > private_key.pem
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > private_key.pem
         chmod 600 private_key.pem
 
         # Connect to EC2 and deploy the app
