@@ -6,7 +6,7 @@ variables:
 
 stages:
 
-# 🚀 START EC2 INSTANCE
+# 🚀 START  EC2 INSTANCE
 - stage: StartEC2
   jobs:
   - job: StartJob
