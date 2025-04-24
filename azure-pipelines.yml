@@ -56,7 +56,7 @@ stages:
         EOF
       displayName: "Deploy NGINX App to EC2"
 
-# 🛑 STOP EC2 INSTANCE
+# 🛑 STOP EC2  INSTANCE
 - stage: StopEC2
   dependsOn: DeployApp
   condition: succeeded()
